@@ -1,5 +1,6 @@
 "use strict";
 
+console.log("E-ID templates: script started.");
 const path = require("path");
 const fs = require("fs");
 const { google } = require("googleapis");
@@ -10,6 +11,7 @@ const FRONT_FILENAME = "FRONT (clear).png";
 const BACK_FILENAME = "BACK.png";
 
 async function run() {
+  console.log("E-ID templates: checking env...");
   const frontFileId = process.env.EID_TEMPLATE_FRONT_FILE_ID;
   const backFileId = process.env.EID_TEMPLATE_BACK_FILE_ID;
   const isVercel = process.env.VERCEL === "1" || process.env.CI === "true";
@@ -52,6 +54,7 @@ async function run() {
 
   const drive = google.drive({ version: "v3", auth });
 
+  console.log("E-ID templates: downloading from Google Drive...");
   if (!fs.existsSync(TEMPLATE_DIR)) {
     fs.mkdirSync(TEMPLATE_DIR, { recursive: true });
   }
