@@ -3,6 +3,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@napi-rs/canvas"],
   },
+  outputFileTracingIncludes: {
+    "/admin/dashboard/**": ["./public/image_template/*"],
+    "/**": ["./public/image_template/*"],
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];

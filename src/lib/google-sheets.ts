@@ -5,20 +5,20 @@ import type { SheetRow, ApplicationStatus } from "@/types/application";
 const SHEET_ID = process.env.GOOGLE_SHEET_ID ?? "1J528rL6r42zY_aOeVvCrYIhAMIpY2We8AvMTRUGsFIc";
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME ?? "Sheet1";
 
-const PH_TIMEZONE = "Asia/Manila";
-
-/** Format date in Philippine time: MM/DD/YYYY HH:MM AM/PM */
+/** Philippine time is UTC+8 (no DST). Format: MM/DD/YYYY HH:MM AM/PM */
 export function formatTimestamp(date: Date): string {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: PH_TIMEZONE,
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-  return formatter.format(date).replace(", ", " ");
+  const phtMs = date.getTime() + 8 * 60 * 60 * 1000;
+  const pht = new Date(phtMs);
+  const mm = String(pht.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(pht.getUTCDate()).padStart(2, "0");
+  const yyyy = pht.getUTCFullYear();
+  let hours = pht.getUTCHours();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  const hh = String(hours).padStart(2, "0");
+  const min = String(pht.getUTCMinutes()).padStart(2, "0");
+  return `${mm}/${dd}/${yyyy} ${hh}:${min} ${ampm}`;
 }
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
