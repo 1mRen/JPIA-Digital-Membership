@@ -5,16 +5,9 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { EID_FIELDS } from "./eid-config";
 import type { SheetRow } from "@/types/application";
 
-// Build script writes to public/image_template. On Vercel, outputFileTracingIncludes
-// bundles it; use process.cwd() so it works in serverless.
-const PUBLIC_TEMPLATE_DIR = path.join(process.cwd(), "public", "image_template");
-const FALLBACK_TEMPLATE_DIR = path.join(process.cwd(), "image_template");
-const TEMPLATE_DIR =
-  process.env.VERCEL === "1"
-    ? PUBLIC_TEMPLATE_DIR
-    : existsSync(PUBLIC_TEMPLATE_DIR)
-      ? PUBLIC_TEMPLATE_DIR
-      : FALLBACK_TEMPLATE_DIR;
+// Templates are in image_template/ at project root (downloaded by build script).
+// Next.js file tracer should include them automatically since we use fs.readFile with a static base path.
+const TEMPLATE_DIR = path.join(process.cwd(), "image_template");
 
 export interface EidBuffers {
   front: Buffer;

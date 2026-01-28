@@ -6,8 +6,8 @@ const fs = require("fs");
 const { google } = require("googleapis");
 
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly";
-// Use public/image_template so templates are included in Vercel serverless deployment
-const TEMPLATE_DIR = path.join(process.cwd(), "public", "image_template");
+// Download to project root image_template/ (not public/) so it can be traced by Next.js
+const TEMPLATE_DIR = path.join(process.cwd(), "image_template");
 const FRONT_FILENAME = "FRONT (clear).png";
 const BACK_FILENAME = "BACK.png";
 
@@ -56,10 +56,6 @@ async function run() {
   const drive = google.drive({ version: "v3", auth });
 
   console.log("E-ID templates: downloading from Google Drive...");
-  const publicDir = path.join(process.cwd(), "public");
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
-  }
   if (!fs.existsSync(TEMPLATE_DIR)) {
     fs.mkdirSync(TEMPLATE_DIR, { recursive: true });
   }
