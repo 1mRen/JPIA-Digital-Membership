@@ -11,14 +11,14 @@ Next.js application for student membership applications: students submit via a f
 
 2. **Environment**
    - Copy `.env.example` to `.env.local`
-   - Set `GOOGLE_SHEET_ID` (default is set for the project sheet)
+   - Set `GOOGLE_SHEET_ID` to your spreadsheet ID (from the sheet URL)
    - Set `GOOGLE_SHEET_NAME` to your first sheet tab name (default `Sheet1`). If you renamed it to "Applications", set `GOOGLE_SHEET_NAME=Applications`
-   - Ensure the service account JSON path is correct (`jpia-digital-membership-3c5e52b155bb.json` in project root, or set `GOOGLE_SERVICE_ACCOUNT_PATH`)
+   - Set `GOOGLE_SERVICE_ACCOUNT_PATH` to your service account JSON file (e.g. `ServiceAccount.json` in project root)
    - Set `ADMIN_PASSWORD` for the shared officer login
    - Set SMTP variables for email (Gmail App Password, SendGrid, etc.)
 
 3. **Google Sheet**
-   - Share the spreadsheet with the service account email (Editor): `jpia-serviceaccount@jpia-digital-membership.iam.gserviceaccount.com`
+   - Share the spreadsheet with the service account email from your JSON (Editor). Find it in the JSON as `client_email`.
    - Ensure the first sheet has **row 1** as header: `Timestamp` | `OR Number` | `Full Name` | `Program & Year` | `Email` | `Status` | `Rejected Reason` | `Released At`
    - Data is appended from row 2; pending rows are those with `Status = Pending`
 
@@ -32,6 +32,34 @@ Next.js application for student membership applications: students submit via a f
 - Build: `npm run build`
 - Start: `npm start`
 
+## Production deployment
+
+### Build & run (Node)
+
+```bash
+npm run build
+NODE_ENV=production npm start
+```
+
+Runs on port **3000** by default. Use a process manager (e.g. PM2) and a reverse proxy (e.g. Nginx) for production.
+
+### Deploy to Vercel (recommended)
+
+1. Push the repo to GitHub and import the project in [Vercel](https://vercel.com).
+2. Add **Environment Variables** in the Vercel dashboard (same names as in `.env.example`). Do **not** commit `.env.local`.
+3. For Google Sheets: either paste the service account JSON as a single variable (e.g. `GOOGLE_SERVICE_ACCOUNT_JSON`) and adjust the app to read from it, or use Vercel’s file system and set `GOOGLE_SERVICE_ACCOUNT_PATH` to the path of the uploaded file.
+4. Set `NEXT_PUBLIC_APP_URL` to your production URL (e.g. `https://your-app.vercel.app`).
+5. Deploy; Vercel will run `npm run build` and serve the app.
+
+### Production checklist
+
+- [ ] Use strong `ADMIN_PASSWORD` and keep it secret.
+- [ ] Use HTTPS only (Vercel and most hosts provide it).
+- [ ] Set `NEXT_PUBLIC_APP_URL` to the real production URL (used in emails/links).
+- [ ] Restrict Google Sheet sharing to the service account only.
+- [ ] Use a dedicated SMTP account or transactional email (e.g. SendGrid) with proper sending limits and domain verification.
+- [ ] Do not commit `.env.local`, `.env`, or service account JSON; use host environment variables or secrets.
+
 ## Routes
 
 - `/` – Public application form
@@ -44,3 +72,7 @@ Next.js application for student membership applications: students submit via a f
 2. Officer logs in at `/admin`, opens dashboard, sees pending list
 3. Officer clicks **Confirm/Release** → e-ID images generated from templates, email sent with attachments, status set to `Released`
 4. Officer clicks **Reject** → enters reason, rejection email sent, status set to `Rejected`
+
+## License
+
+MIT – see [LICENSE](LICENSE).
