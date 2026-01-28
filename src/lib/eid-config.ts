@@ -26,11 +26,11 @@ export const EID_FIELDS: Record<string, FieldConfig> = {
   // Targets: Left aligned, below "Burn BRIGHT".
   // Weights: Bold = 700 or 800. Normal = 400.
   orNumber: {
-    x: 0.035, // 8% from the left edge
+    x: 0.035, // 3.5% from the left edge
     y: 0.56,
     fontSize: 24,
     fontWeight: 700,
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "Arial, sans-serif",
     side: "front",
     color: "#FFFFFF",
   },
@@ -39,7 +39,7 @@ export const EID_FIELDS: Record<string, FieldConfig> = {
     y: 0.61,
     fontSize: 44,
     fontWeight: 700,
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "Arial, sans-serif",
     side: "front",
     color: "#F2B200",
   },
@@ -49,7 +49,7 @@ export const EID_FIELDS: Record<string, FieldConfig> = {
     fontSize: 20,
     fontWeight: 600,
     fontStyle: "italic",
-    fontFamily: "Poppins, sans-serif",
+    fontFamily: "Arial, sans-serif",
     side: "front",
     color: "#FFFFFF",
   },

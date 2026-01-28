@@ -1,9 +1,42 @@
 import path from "path";
 import fs from "fs/promises";
 import { existsSync } from "fs";
-import { createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import { EID_FIELDS } from "./eid-config";
 import type { SheetRow } from "@/types/application";
+
+// Register system fonts for @napi-rs/canvas
+// This ensures text will render properly on the cards
+let fontsRegistered = false;
+function ensureFontsRegistered() {
+  if (fontsRegistered) return;
+  
+  try {
+    // Try to register common system fonts
+    // On Windows, fonts are typically in C:\Windows\Fonts
+    // On Linux/Mac, try common font locations
+    const fontPaths = process.platform === 'win32' 
+      ? [
+          'C:\\Windows\\Fonts\\arial.ttf',
+          'C:\\Windows\\Fonts\\arialbd.ttf',
+        ]
+      : [
+          '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+          '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+          '/System/Library/Fonts/Helvetica.ttc',
+        ];
+    
+    for (const fontPath of fontPaths) {
+      if (existsSync(fontPath)) {
+        GlobalFonts.registerFromPath(fontPath);
+      }
+    }
+    
+    fontsRegistered = true;
+  } catch (error) {
+    console.warn('Failed to register fonts, text may not render correctly:', error);
+  }
+}
 
 // Templates are in image_template/ at project root (downloaded by build script).
 // Next.js file tracer should include them automatically since we use fs.readFile with a static base path.
@@ -28,6 +61,9 @@ async function drawTextOnImage(
   data: { orNumber: string; fullName: string; programAndYear: string },
   side: "front" | "back"
 ): Promise<Buffer> {
+  // Ensure fonts are registered before drawing
+  ensureFontsRegistered();
+  
   const buf = await fs.readFile(imagePath);
   const img = await loadImage(buf);
   const w = img.width;
@@ -49,13 +85,22 @@ async function drawTextOnImage(
     if (config.side !== side) continue;
     const value = fieldMap[key] ?? "";
     if (!value) continue;
-    const fontFamily = config.fontFamily ?? "sans-serif";
+    
+    const fontFamily = config.fontFamily ?? "Arial, sans-serif";
     const fontWeight = config.fontWeight ?? 400;
     const fontStyle = config.fontStyle ?? "normal";
-    ctx.font = `${fontStyle} ${fontWeight} ${config.fontSize}px ${fontFamily}`;
+    
+    // Map font weight to bold keyword for better compatibility
+    const weightKeyword = fontWeight >= 700 ? "bold" : "normal";
+    ctx.font = `${fontStyle} ${weightKeyword} ${config.fontSize}px ${fontFamily}`;
     ctx.fillStyle = config.color ?? "#000000";
+    
     const xPx = config.x > 0 && config.x <= 1 ? config.x * w : config.x;
     const yPx = config.y > 0 && config.y <= 1 ? config.y * h : config.y;
+    
+    // Log for debugging
+    console.log(`Drawing ${key} at (${xPx}, ${yPx}) with font: ${ctx.font}`);
+    
     ctx.fillText(value, xPx, yPx);
   }
 
