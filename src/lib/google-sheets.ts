@@ -1,6 +1,5 @@
 import { google } from "googleapis";
 import path from "path";
-import fs from "fs";
 import type { SheetRow, ApplicationStatus } from "@/types/application";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID ?? "1J528rL6r42zY_aOeVvCrYIhAMIpY2We8AvMTRUGsFIc";
@@ -20,17 +19,26 @@ function formatTimestamp(date: Date): string {
   return `${mm}/${dd}/${yyyy} ${hh}:${min} ${ampm}`;
 }
 
+const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+
 function getAuth() {
+  // 1. Use JSON string from env (Production / Vercel)
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    return new google.auth.GoogleAuth({
+      credentials,
+      scopes: SCOPES,
+    });
+  }
+
+  // 2. Fallback to file path (Local development)
   const keyPath =
     process.env.GOOGLE_SERVICE_ACCOUNT_PATH ??
     path.join(process.cwd(), "jpia-digital-membership-3c5e52b155bb.json");
-  const keyContent = fs.readFileSync(keyPath, "utf-8");
-  const keys = JSON.parse(keyContent);
-  const auth = new google.auth.GoogleAuth({
-    credentials: keys,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  return new google.auth.GoogleAuth({
+    keyFile: keyPath,
+    scopes: SCOPES,
   });
-  return auth;
 }
 
 export async function appendRow(data: {

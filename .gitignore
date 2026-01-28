@@ -37,3 +37,6 @@ next-env.d.ts
 # project assets not tracked in git
 image_template/
 jpia-digital-membership-3c5e52b155bb.json
+
+# vercel
+.vercel
