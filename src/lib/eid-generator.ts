@@ -1,10 +1,15 @@
 import path from "path";
 import fs from "fs/promises";
+import { existsSync } from "fs";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { EID_FIELDS } from "./eid-config";
 import type { SheetRow } from "@/types/application";
 
-const TEMPLATE_DIR = path.join(process.cwd(), "image_template");
+// Vercel: build script writes to public/image_template (included in deployment).
+// Local: use image_template at project root if present.
+const PUBLIC_TEMPLATE_DIR = path.join(process.cwd(), "public", "image_template");
+const FALLBACK_TEMPLATE_DIR = path.join(process.cwd(), "image_template");
+const TEMPLATE_DIR = existsSync(PUBLIC_TEMPLATE_DIR) ? PUBLIC_TEMPLATE_DIR : FALLBACK_TEMPLATE_DIR;
 
 export interface EidBuffers {
   front: Buffer;
