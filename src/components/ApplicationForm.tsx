@@ -29,14 +29,17 @@ export function ApplicationForm() {
     }
   }
 
+  const inputClass =
+    "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition";
+
   return (
     <form
       id="application-form"
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+      className="space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-md sm:p-8"
     >
       <div>
-        <label htmlFor="orNumber" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="orNumber" className="mb-1.5 block text-sm font-medium text-slate-700">
           OR Number *
         </label>
         <input
@@ -44,13 +47,13 @@ export function ApplicationForm() {
           name="orNumber"
           type="text"
           required
-          className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className={inputClass}
           placeholder="Official Receipt Number"
         />
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div className="col-span-1">
-          <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-slate-700">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="col-span-3 sm:col-span-1">
+          <label htmlFor="lastName" className="mb-1.5 block text-sm font-medium text-slate-700">
             Last Name *
           </label>
           <input
@@ -58,11 +61,11 @@ export function ApplicationForm() {
             name="lastName"
             type="text"
             required
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           />
         </div>
-        <div className="col-span-1">
-          <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-slate-700">
+        <div className="col-span-3 sm:col-span-1">
+          <label htmlFor="firstName" className="mb-1.5 block text-sm font-medium text-slate-700">
             First Name *
           </label>
           <input
@@ -70,11 +73,11 @@ export function ApplicationForm() {
             name="firstName"
             type="text"
             required
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           />
         </div>
-        <div className="col-span-1">
-          <label htmlFor="middleInitial" className="mb-1 block text-sm font-medium text-slate-700">
+        <div className="col-span-3 sm:col-span-1">
+          <label htmlFor="middleInitial" className="mb-1.5 block text-sm font-medium text-slate-700">
             M.I.
           </label>
           <input
@@ -82,20 +85,21 @@ export function ApplicationForm() {
             name="middleInitial"
             type="text"
             maxLength={2}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
+            placeholder="Optional"
           />
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="program" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="program" className="mb-1.5 block text-sm font-medium text-slate-700">
             Program *
           </label>
           <select
             id="program"
             name="program"
             required
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           >
             <option value="">Select program</option>
             <option value="BS Accountancy">BS Accountancy</option>
@@ -103,14 +107,14 @@ export function ApplicationForm() {
           </select>
         </div>
         <div>
-          <label htmlFor="yearLevel" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="yearLevel" className="mb-1.5 block text-sm font-medium text-slate-700">
             Year Level *
           </label>
           <select
             id="yearLevel"
             name="yearLevel"
             required
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={inputClass}
           >
             <option value="">Select year</option>
             <option value="1">1</option>
@@ -122,7 +126,7 @@ export function ApplicationForm() {
         </div>
       </div>
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
           Email Address *
         </label>
         <input
@@ -130,13 +134,13 @@ export function ApplicationForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded border border-slate-300 px-3 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className={inputClass}
           placeholder="you@example.com"
         />
       </div>
       {message && (
         <p
-          className={`rounded py-2 text-sm ${
+          className={`rounded-lg px-3 py-2.5 text-sm ${
             message.type === "success"
               ? "bg-green-50 text-green-800"
               : "bg-red-50 text-red-800"
@@ -148,7 +152,7 @@ export function ApplicationForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded bg-blue-600 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
       >
         {pending ? "Submitting…" : "Submit Application"}
       </button>
