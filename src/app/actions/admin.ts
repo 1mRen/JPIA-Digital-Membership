@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import {
+  formatTimestamp,
   getPendingRows,
   getRowByIndex,
   updateRowStatus,
@@ -43,7 +44,7 @@ export async function confirmApplication(rowIndex: number): Promise<ConfirmResul
     const { generateEidImages } = await import("@/lib/eid-generator");
     const eidBuffers = await generateEidImages(row);
     await sendEidEmail(row.email, row.fullName, eidBuffers);
-    const releasedAt = new Date().toISOString();
+    const releasedAt = formatTimestamp(new Date());
     await updateRowStatus(rowIndex, "Released", { releasedAt });
     return { success: true };
   } catch (e) {
