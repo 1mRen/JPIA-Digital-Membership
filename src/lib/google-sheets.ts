@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import path from "path";
+import { existsSync } from "fs";
 import type { SheetRow, ApplicationStatus } from "@/types/application";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID ?? "1J528rL6r42zY_aOeVvCrYIhAMIpY2We8AvMTRUGsFIc";
@@ -23,14 +24,54 @@ export function formatTimestamp(date: Date): string {
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 
+function parseServiceAccountJson(raw: string): object {
+  let str = raw.trim();
+  // Remove optional outer quotes from .env (e.g. GOOGLE_SERVICE_ACCOUNT_JSON="{...}")
+  if ((str.startsWith('"') && str.endsWith('"')) || (str.startsWith("'") && str.endsWith("'"))) {
+    str = str.slice(1, -1).replace(/\\"/g, '"');
+  }
+  // Try Base64 (common when pasting JSON into Vercel/env)
+  if (!str.startsWith("{")) {
+    try {
+      str = Buffer.from(str, "base64").toString("utf8");
+    } catch {
+      // not base64, continue with raw
+    }
+  }
+  return JSON.parse(str) as object;
+}
+
 function getAuth() {
-  // 1. Use JSON string from env (Production / Vercel)
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-    return new google.auth.GoogleAuth({
-      credentials,
-      scopes: SCOPES,
-    });
+  // 1. Use JSON string from env (Production / Vercel) — must be single-line or Base64
+  const envJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (envJson) {
+    try {
+      const credentials = parseServiceAccountJson(envJson);
+      return new google.auth.GoogleAuth({
+        credentials,
+        scopes: SCOPES,
+      });
+    } catch (e) {
+      // If JSON is invalid (e.g. multi-line in .env), fall back to file so local dev still works
+      const keyPath =
+        process.env.GOOGLE_SERVICE_ACCOUNT_PATH ??
+        path.join(process.cwd(), "jpia-digital-membership-3c5e52b155bb.json");
+      if (existsSync(keyPath)) {
+        console.warn(
+          "GOOGLE_SERVICE_ACCOUNT_JSON is set but invalid (use single-line JSON or Base64). Using key file:",
+          keyPath
+        );
+        return new google.auth.GoogleAuth({
+          keyFile: keyPath,
+          scopes: SCOPES,
+        });
+      }
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new Error(
+        `Invalid GOOGLE_SERVICE_ACCOUNT_JSON: ${msg}. ` +
+          "Use a single-line JSON string, or Base64-encode the JSON. For local dev, set GOOGLE_SERVICE_ACCOUNT_PATH instead."
+      );
+    }
   }
 
   // 2. Fallback to file path (Local development)

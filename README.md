@@ -1,78 +1,62 @@
-# JPIA Digital Membership System
+# JPIA Silakbo E-ID System
 
-Next.js application for student membership applications: students submit via a form, data is stored in Google Sheets, and officers approve or reject from an admin dashboard. Approved applicants receive their e-ID by email.
+A **Next.js** web application designed to automate membership applications for the **JPIA Silakbo Federation**. It features a public registration form, a real-time officer dashboard, and an automated email system that generates and issues digital IDs.
 
-## Setup
+## Tech Stack
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
+- **Framework:** Next.js 14 (App Router)
+- **Database:** Google Sheets (via `googleapis`)
+- **Email Engine:** Nodemailer
+- **Image Processing:** @napi-rs/canvas
+- **Styling:** Tailwind CSS
 
-2. **Environment**
-   - Copy `.env.example` to `.env.local`
-   - Set `GOOGLE_SHEET_ID` to your spreadsheet ID (from the sheet URL)
-   - Set `GOOGLE_SHEET_NAME` to your first sheet tab name (default `Sheet1`). If you renamed it to "Applications", set `GOOGLE_SHEET_NAME=Applications`
-   - Set `GOOGLE_SERVICE_ACCOUNT_PATH` to your service account JSON file (e.g. `ServiceAccount.json` in project root)
-   - Set `ADMIN_PASSWORD` for the shared officer login
-   - Set SMTP variables for email (Gmail App Password, SendGrid, etc.)
+## Key Features
 
-3. **Google Sheet**
-   - Share the spreadsheet with the service account email from your JSON (Editor). Find it in the JSON as `client_email`.
-   - Ensure the first sheet has **row 1** as header: `Timestamp` | `OR Number` | `Full Name` | `Program & Year` | `Email` | `Status` | `Rejected Reason` | `Released At`
-   - Data is appended from row 2; pending rows are those with `Status = Pending`
+- **Google Sheets Integration:** Uses Sheets as a zero-cost, collaborative database.
+- **Dynamic Image Generation:** Programmatically renders names and OR numbers onto E-ID templates using `@napi-rs/canvas`.
+- **Automated Workflows:** Sends emails via **Nodemailer** with generated E-ID attachments instantly upon approval.
+- **Secure Admin Dashboard:** Simple password-protected interface for officers to review applications.
 
-4. **E-ID template**
-   - Place `FRONT.png` and `BACK.png` in the `image_template` folder (already present)
-   - Adjust text positions in `src/lib/eid-config.ts` (x, y, fontSize) to match your template layout
+## Environment Setup
 
-## Run
-
-- Development: `npm run dev`
-- Build: `npm run build`
-- Start: `npm start`
-
-## Production deployment
-
-### Build & run (Node)
+Copy `.env.example` to `.env.local` and configure your SMTP (Nodemailer) and Google settings:
 
 ```bash
-npm run build
-NODE_ENV=production npm start
-```
+# App Config
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+ADMIN_PASSWORD=your_secure_password
 
-Runs on port **3000** by default. Use a process manager (e.g. PM2) and a reverse proxy (e.g. Nginx) for production.
+# Google Sheets Config
+GOOGLE_SHEET_ID=your_spreadsheet_id
+GOOGLE_SHEET_NAME=Sheet1
+GOOGLE_SERVICE_ACCOUNT_PATH=./service-account.json
 
-### Deploy to Vercel (recommended)
+# Email Config (Nodemailer)
+# Use a Gmail App Password if using Gmail
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+Installation
+Bash
+# 1. Install dependencies
+npm install
 
-1. Push the repo to GitHub and import the project in [Vercel](https://vercel.com).
-2. Add **Environment Variables** in the Vercel dashboard (same names as in `.env.example`). Do **not** commit `.env.local`.
-3. For Google Sheets: either paste the service account JSON as a single variable (e.g. `GOOGLE_SERVICE_ACCOUNT_JSON`) and adjust the app to read from it, or use Vercel’s file system and set `GOOGLE_SERVICE_ACCOUNT_PATH` to the path of the uploaded file.
-4. Set `NEXT_PUBLIC_APP_URL` to your production URL (e.g. `https://your-app.vercel.app`).
-5. Deploy; Vercel will run `npm run build` and serve the app.
+# 2. Place your E-ID templates
+# Ensure FRONT.png and BACK.png are in /image_template
 
-### Production checklist
+# 3. Run development server
+npm run dev
+Usage Flow
+Student: Submits the form at /. Status becomes Pending.
 
-- [ ] Use strong `ADMIN_PASSWORD` and keep it secret.
-- [ ] Use HTTPS only (Vercel and most hosts provide it).
-- [ ] Set `NEXT_PUBLIC_APP_URL` to the real production URL (used in emails/links).
-- [ ] Restrict Google Sheet sharing to the service account only.
-- [ ] Use a dedicated SMTP account or transactional email (e.g. SendGrid) with proper sending limits and domain verification.
-- [ ] Do not commit `.env.local`, `.env`, or service account JSON; use host environment variables or secrets.
+Officer: Logs in at /admin.
 
-## Routes
+Review:
 
-- `/` – Public application form
-- `/admin` – Officer login (password)
-- `/admin/dashboard` – Pending applications list; Confirm/Release or Reject per row
+Confirm: System generates the ID image, sends it via Nodemailer, and marks status Released.
 
-## Flow
+Reject: Officer inputs a reason, student gets a rejection email, and status updates to Rejected.
 
-1. Student submits the form → row appended to Google Sheet with status `Pending`
-2. Officer logs in at `/admin`, opens dashboard, sees pending list
-3. Officer clicks **Confirm/Release** → e-ID images generated from templates, email sent with attachments, status set to `Released`
-4. Officer clicks **Reject** → enters reason, rejection email sent, status set to `Rejected`
-
-## License
-
-MIT – see [LICENSE](LICENSE).
+License
+MIT © Marc Lawrence Magadan
