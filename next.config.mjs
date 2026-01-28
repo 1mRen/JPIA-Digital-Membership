@@ -3,7 +3,11 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@napi-rs/canvas"],
     outputFileTracingIncludes: {
-      "/admin/dashboard": ["./image_template/*.png"],
+      "/admin/dashboard": [
+        "./image_template/*.png",
+        "./node_modules/@fontsource/roboto/files/roboto-latin-400-normal.woff2",
+        "./node_modules/@fontsource/roboto/files/roboto-latin-700-normal.woff2",
+      ],
     },
   },
   webpack: (config, { isServer }) => {

@@ -5,36 +5,59 @@ import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas";
 import { EID_FIELDS } from "./eid-config";
 import type { SheetRow } from "@/types/application";
 
-// Register system fonts for @napi-rs/canvas
-// This ensures text will render properly on the cards
+// Register fonts for @napi-rs/canvas so text renders on e-ID cards (local + Vercel)
+const ROBOTO_FILES = path.join(process.cwd(), "node_modules", "@fontsource", "roboto", "files");
 let fontsRegistered = false;
 function ensureFontsRegistered() {
   if (fontsRegistered) return;
-  
+
   try {
-    // Try to register common system fonts
-    // On Windows, fonts are typically in C:\Windows\Fonts
-    // On Linux/Mac, try common font locations
-    const fontPaths = process.platform === 'win32' 
-      ? [
-          'C:\\Windows\\Fonts\\arial.ttf',
-          'C:\\Windows\\Fonts\\arialbd.ttf',
-        ]
-      : [
-          '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-          '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-          '/System/Library/Fonts/Helvetica.ttc',
-        ];
-    
-    for (const fontPath of fontPaths) {
+    // 1. Prefer @fontsource/roboto from node_modules (woff2; works on Vercel)
+    const bundledFonts = [
+      path.join(ROBOTO_FILES, "roboto-latin-400-normal.woff2"),
+      path.join(ROBOTO_FILES, "roboto-latin-700-normal.woff2"),
+    ];
+    for (const fontPath of bundledFonts) {
       if (existsSync(fontPath)) {
         GlobalFonts.registerFromPath(fontPath);
       }
     }
-    
+
+    // 2. Fallback: fonts/ from build script (if download-fonts ran)
+    const fontsDir = path.join(process.cwd(), "fonts");
+    const downloadedFonts = [
+      path.join(fontsDir, "Roboto-Regular.ttf"),
+      path.join(fontsDir, "Roboto-Bold.ttf"),
+    ];
+    for (const fontPath of downloadedFonts) {
+      if (existsSync(fontPath)) {
+        GlobalFonts.registerFromPath(fontPath);
+      }
+    }
+
+    // 3. Fallback: system fonts (Windows / Linux / Mac)
+    const systemFonts =
+      process.platform === "win32"
+        ? [
+            "C:\\Windows\\Fonts\\arial.ttf",
+            "C:\\Windows\\Fonts\\arialbd.ttf",
+          ]
+        : [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+          ];
+    for (const fontPath of systemFonts) {
+      if (existsSync(fontPath)) {
+        GlobalFonts.registerFromPath(fontPath);
+      }
+    }
+
     fontsRegistered = true;
   } catch (error) {
-    console.warn('Failed to register fonts, text may not render correctly:', error);
+    console.warn("Failed to register fonts, text may not render correctly:", error);
   }
 }
 
@@ -86,7 +109,8 @@ async function drawTextOnImage(
     const value = fieldMap[key] ?? "";
     if (!value) continue;
     
-    const fontFamily = config.fontFamily ?? "Arial, sans-serif";
+    // Use Roboto if we bundled it; otherwise Arial / system sans
+const fontFamily = config.fontFamily ?? "Roboto, Arial, sans-serif";
     const fontWeight = config.fontWeight ?? 400;
     const fontStyle = config.fontStyle ?? "normal";
     
